@@ -11,43 +11,6 @@ df["date"] = pd.to_datetime(df["date"])
 print("Data Loaded Successfully")
 print(df.head())
 
-# ===== CREATE WEIGHT LINE CHART =====
-weight_fig = px.line(
-    df, x="date", y="weight", title="Weight Progress Over Time", markers=True
-)
-
-weight_fig.update_layout(
-    template="plotly_dark", xaxis_title="Date", yaxis_title="Weight (kg)"
-)
-
-# ===== CREATE BODY FAT LINE CHART =====
-bodyfat_fig = px.line(
-    df, x="date", y="body_fat", title="Body Fat Percentage Over Time", markers=True
-)
-
-bodyfat_fig.update_layout(
-    template="plotly_dark", xaxis_title="Date", yaxis_title="Body Fat (%)"
-)
-
-# ===== CREATE WORKOUT DISTRIBUTION PIE CHART =====
-total_cardio = df["cardio_min"].sum()
-total_weight_training = df["weight_min"].sum()
-
-workout_data = pd.DataFrame(
-    {
-        "Workout Type": ["Cardio", "Weight Training"],
-        "Total Minutes": [total_cardio, total_weight_training],
-    }
-)
-
-workout_fig = px.pie(
-    workout_data,
-    names="Workout Type",
-    values="Total Minutes",
-    title="Workout Distribution",
-)
-
-workout_fig.update_layout(template="plotly_dark")
 
 app = dash.Dash(__name__)
 app.title = "Fitness Dashboard"
@@ -98,14 +61,70 @@ app.layout = html.Div(
         # ===== GRAPH SECTION =====
         html.Div(
             [
-                dcc.Graph(figure=weight_fig),
-                dcc.Graph(figure=bodyfat_fig),
-                dcc.Graph(figure=workout_fig),
+                dcc.Graph(id="weight-chart"),
+                dcc.Graph(id="bodyfat-chart"),
+                dcc.Graph(id="workout-chart"),
             ],
             style={"padding": "20px"},
         ),
     ]
 )
+
+
+# ===== CALLBACK FOR DATE FILTER =====
+@app.callback(
+    Output("weight-chart", "figure"),
+    Output("bodyfat-chart", "figure"),
+    Output("workout-chart", "figure"),
+    Input("date-picker", "start_date"),
+    Input("date-picker", "end_date"),
+)
+def update_charts(start_date, end_date):
+
+    # Filter dataframe
+    filtered_df = df[(df["date"] >= start_date) & (df["date"] <= end_date)]
+
+    # ===== Weight Chart =====
+    weight_fig = px.line(
+        filtered_df,
+        x="date",
+        y="weight",
+        title="Weight Progress Over Time",
+        markers=True,
+    )
+    weight_fig.update_layout(template="plotly_dark")
+
+    # ===== Body Fat Chart =====
+    bodyfat_fig = px.line(
+        filtered_df,
+        x="date",
+        y="body_fat",
+        title="Body Fat Percentage Over Time",
+        markers=True,
+    )
+    bodyfat_fig.update_layout(template="plotly_dark")
+
+    # ===== Workout Pie Chart =====
+    total_cardio = filtered_df["cardio_min"].sum()
+    total_weight_training = filtered_df["weight_min"].sum()
+
+    workout_data = pd.DataFrame(
+        {
+            "Workout Type": ["Cardio", "Weight Training"],
+            "Total Minutes": [total_cardio, total_weight_training],
+        }
+    )
+
+    workout_fig = px.pie(
+        workout_data,
+        names="Workout Type",
+        values="Total Minutes",
+        title="Workout Distribution",
+    )
+    workout_fig.update_layout(template="plotly_dark")
+
+    return weight_fig, bodyfat_fig, workout_fig
+
 
 if __name__ == "__main__":
     app.run(debug=True)
