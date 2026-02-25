@@ -49,7 +49,7 @@ app.layout = html.Div(
                     display_format="YYYY-MM-DD",
                 ),
             ],
-            style={"textAlign": "center", "padding": "20px"},
+            className="filter-section",
         ),
         # ===== WORKOUT TYPE FILTER =====
         html.Div(
@@ -136,6 +136,9 @@ app.layout = html.Div(
 )
 def update_charts(start_date, end_date, workout_type, summary_type):
 
+    if not start_date or not end_date:
+        return [dash.no_update] * 7
+
     # 🔥 แปลง string เป็น datetime ก่อน
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
@@ -185,7 +188,6 @@ def update_charts(start_date, end_date, workout_type, summary_type):
     else:
         weight_df = filtered_df.copy().sort_values("date")
 
-        # 🔥 Rolling average 3 จุด
         weight_df["rolling_avg"] = weight_df["weight"].rolling(window=3).mean()
 
         weight_fig = px.line(
@@ -196,7 +198,6 @@ def update_charts(start_date, end_date, workout_type, summary_type):
             markers=True,
         )
 
-        # เพิ่มเส้น Rolling
         weight_fig.add_scatter(
             x=weight_df["date"],
             y=weight_df["rolling_avg"],
@@ -205,7 +206,11 @@ def update_charts(start_date, end_date, workout_type, summary_type):
             line=dict(width=3),
         )
 
-        weight_fig.update_layout(template="plotly_dark")
+        weight_fig.update_traces(
+            hovertemplate="Date: %{x}<br>Weight: %{y:.2f} kg<extra></extra>"
+        )
+
+        weight_fig.update_layout(template="plotly_dark", transition_duration=500)
 
     # ===== BODY FAT CHART =====
     if filtered_df.empty:

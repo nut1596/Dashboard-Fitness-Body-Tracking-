@@ -1,27 +1,143 @@
+/* ===================================== */
+/* GLOBAL */
+/* ===================================== */
+
 body {
     background-color: #0f0f0f;
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
 }
+
+/* ทำให้ข้อความใน dashboard เป็นสีขาว */
+h1, h2, h3, h4, h5, h6,
+p,
+label {
+    color: white;
+}
+
+p {
+    color: #bbbbbb;
+}
+
+
+/* ===================================== */
+/* KPI SECTION */
+/* ===================================== */
 
 .kpi-container {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
+    gap: 20px;
     padding: 20px;
+    flex-wrap: wrap;
 }
 
 .kpi-card {
-    background-color: #1c1c1c;
-    padding: 20px;
-    border-radius: 12px;
-    width: 30%;
+    flex: 1;
+    min-width: 250px;
+    background: linear-gradient(145deg, #1c1c1c, #242424);
+    padding: 25px;
+    border-radius: 14px;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    font-size: 20px;
-    font-weight: bold;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+    font-size: 18px;
+    font-weight: 600;
     color: white;
-    transition: transform 0.2s ease;
+    transition: all 0.25s ease;
+}
+
+.kpi-card div:first-child {
+    font-size: 26px;
+    margin-bottom: 6px;
 }
 
 .kpi-card:hover {
-    transform: scale(1.05);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8);
+}
+
+
+/* ===================================== */
+/* FILTER SECTION */
+/* ===================================== */
+
+.filter-section {
+    max-width: 600px;
+    margin: 0 auto 30px auto;
+    padding: 25px;
+    background-color: #151515;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+}
+
+/* ===== DatePicker ===== */
+
+.DateInput_input {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #cccccc !important;
+}
+
+/* ===== Dropdown (Dash v2 compatible) ===== */
+
+[class*="control"] {
+    background-color: #ffffff !important;
+    border: 1px solid #cccccc !important;
+}
+
+[class*="singleValue"] {
+    color: #000000 !important;
+}
+
+[class*="placeholder"] {
+    color: #666666 !important;
+}
+
+[class*="menu"] {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+[class*="option"] {
+    color: #000000 !important;
+}
+
+[class*="option"]:hover {
+    background-color: #eeeeee !important;
+}
+
+
+/* ===================================== */
+/* BUTTON */
+/* ===================================== */
+
+button {
+    background: linear-gradient(135deg, #2e86ff, #0056d6);
+    color: white;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+}
+
+
+/* ===================================== */
+/* RESPONSIVE */
+/* ===================================== */
+
+@media (max-width: 900px) {
+    .kpi-container {
+        flex-direction: column;
+    }
+
+    .kpi-card {
+        width: 100%;
+    }
 }
