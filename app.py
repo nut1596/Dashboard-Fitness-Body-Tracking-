@@ -28,6 +28,26 @@ bodyfat_fig.update_layout(
     template="plotly_dark", xaxis_title="Date", yaxis_title="Body Fat (%)"
 )
 
+# ===== CREATE WORKOUT DISTRIBUTION PIE CHART =====
+total_cardio = df["cardio_min"].sum()
+total_weight_training = df["weight_min"].sum()
+
+workout_data = pd.DataFrame(
+    {
+        "Workout Type": ["Cardio", "Weight Training"],
+        "Total Minutes": [total_cardio, total_weight_training],
+    }
+)
+
+workout_fig = px.pie(
+    workout_data,
+    names="Workout Type",
+    values="Total Minutes",
+    title="Workout Distribution",
+)
+
+workout_fig.update_layout(template="plotly_dark")
+
 app = dash.Dash(__name__)
 app.title = "Fitness Dashboard"
 
@@ -64,7 +84,7 @@ app.layout = html.Div(
             [
                 dcc.Graph(figure=weight_fig),
                 dcc.Graph(figure=bodyfat_fig),
-                html.Div("Graph 3 Placeholder"),
+                dcc.Graph(figure=workout_fig),
             ],
             style={"padding": "20px"},
         ),
