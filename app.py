@@ -3,6 +3,7 @@ from dash import html, dcc
 from dash import Input, Output
 import pandas as pd
 import plotly.express as px
+from dash import ctx
 
 # ===== LOAD DATA =====
 df = pd.read_csv("data.csv")
@@ -82,6 +83,14 @@ app.layout = html.Div(
                     clearable=False,
                     style={"width": "300px", "margin": "0 auto"},
                 ),
+            ],
+            style={"textAlign": "center", "padding": "20px"},
+        ),
+        # ===== DOWNLOAD BUTTON =====
+        html.Div(
+            [
+                html.Button("⬇ Download Filtered Data", id="download-btn"),
+                dcc.Download(id="download-dataframe-csv"),
             ],
             style={"textAlign": "center", "padding": "20px"},
         ),
@@ -271,6 +280,31 @@ def update_charts(start_date, end_date, workout_type, summary_type):
         kpi_weight_text,
         kpi_bodyfat_text,
         kpi_workout_text,
+    )
+
+
+@app.callback(
+    Output("download-dataframe-csv", "data"),
+    Input("download-btn", "n_clicks"),
+    Input("date-picker", "start_date"),
+    Input("date-picker", "end_date"),
+    Input("workout-filter", "value"),
+    prevent_initial_call=True,
+)
+def download_filtered_data(n_clicks, start_date, end_date, workout_type):
+
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+
+    filtered_df = df[(df["date"] >= start_date) & (df["date"] <= end_date)]
+
+    if workout_type == "cardio":
+        filtered_df = filtered_df[filtered_df["cardio_min"] > 0]
+    elif workout_type == "weight":
+        filtered_df = filtered_df[filtered_df["weight_min"] > 0]
+
+    return dcc.send_data_frame(
+        filtered_df.to_csv, "filtered_fitness_data.csv", index=False
     )
 
 
