@@ -97,14 +97,26 @@ app.layout = html.Div(
         # ===== GRAPH SECTION =====
         html.Div(
             [
-                dcc.Graph(id="weight-chart"),
-                dcc.Graph(id="bodyfat-chart"),
-                dcc.Graph(id="workout-chart"),
-                dcc.Graph(id="summary-chart"),
+                dcc.Loading(
+                    type="circle",
+                    children=[
+                        dcc.Graph(id="weight-chart"),
+                        dcc.Graph(id="bodyfat-chart"),
+                        dcc.Graph(id="workout-chart"),
+                        dcc.Graph(id="summary-chart"),
+                    ],
+                )
             ],
             style={"padding": "20px"},
         ),
-    ]
+    ],
+    style={
+        "maxWidth": "1200px",
+        "margin": "0 auto",
+        "backgroundColor": "#0f0f0f",
+        "minHeight": "100vh",
+        "paddingBottom": "50px",
+    },
 )
 
 
