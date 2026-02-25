@@ -1,6 +1,7 @@
 import dash
-from dash import html
+from dash import html, dcc
 import pandas as pd
+import plotly.express as px
 
 # ===== LOAD DATA =====
 df = pd.read_csv("data.csv")
@@ -9,11 +10,21 @@ df["date"] = pd.to_datetime(df["date"])
 print("Data Loaded Successfully")
 print(df.head())
 
+# ===== CREATE WEIGHT LINE CHART =====
+weight_fig = px.line(
+    df, x="date", y="weight", title="Weight Progress Over Time", markers=True
+)
+
+weight_fig.update_layout(
+    template="plotly_dark", xaxis_title="Date", yaxis_title="Weight (kg)"
+)
+
 app = dash.Dash(__name__)
 app.title = "Fitness Dashboard"
 
 app.layout = html.Div(
     [
+        # ===== HEADER =====
         html.Div(
             [
                 html.H1("💪 Fitness & Body Tracking Dashboard"),
@@ -26,6 +37,7 @@ app.layout = html.Div(
                 "color": "white",
             },
         ),
+        # ===== KPI SECTION =====
         html.Div(
             [
                 html.Div("Weight KPI"),
@@ -38,9 +50,10 @@ app.layout = html.Div(
                 "padding": "20px",
             },
         ),
+        # ===== GRAPH SECTION =====
         html.Div(
             [
-                html.Div("Graph 1 Placeholder"),
+                dcc.Graph(figure=weight_fig),
                 html.Div("Graph 2 Placeholder"),
                 html.Div("Graph 3 Placeholder"),
             ],
