@@ -4,6 +4,7 @@ from dash import Input, Output
 import pandas as pd
 import plotly.express as px
 from dash import ctx
+from dash import Input, Output, State
 
 # ===== LOAD DATA =====
 df = pd.read_csv("data.csv")
@@ -335,9 +336,9 @@ def update_charts(start_date, end_date, workout_type, summary_type):
 @app.callback(
     Output("download-dataframe-csv", "data"),
     Input("download-btn", "n_clicks"),
-    Input("date-picker", "start_date"),
-    Input("date-picker", "end_date"),
-    Input("workout-filter", "value"),
+    State("date-picker", "start_date"),
+    State("date-picker", "end_date"),
+    State("workout-filter", "value"),
     prevent_initial_call=True,
 )
 def download_filtered_data(n_clicks, start_date, end_date, workout_type):
