@@ -281,7 +281,37 @@ def update_charts(start_date, end_date, workout_type, summary_type):
         weight_kpi = "🏋️ 0 kg"
 
     kpi_weight_text = weight_kpi
-    kpi_bodyfat_text = f"🔥 Latest Body Fat: {latest_bodyfat}%"
+    # ===== BODY FAT KPI WITH DELTA =====
+    if not filtered_df.empty:
+        if len(filtered_df) > 1:
+            previous_bodyfat = filtered_df.iloc[-2]["body_fat"]
+            bodyfat_delta = latest_bodyfat - previous_bodyfat
+        else:
+            bodyfat_delta = 0
+
+        if bodyfat_delta < 0:
+            bf_arrow = "↓"
+            bf_color = "#00FF88"  # เขียว
+        elif bodyfat_delta > 0:
+            bf_arrow = "↑"
+            bf_color = "#FF4C4C"  # แดง
+        else:
+            bf_arrow = "→"
+            bf_color = "white"
+
+        bodyfat_kpi = html.Div(
+            [
+                html.Div(f"🔥 {latest_bodyfat}%"),
+                html.Div(
+                    f"{bf_arrow} {bodyfat_delta:.2f}% from previous",
+                    style={"color": bf_color, "fontSize": "14px"},
+                ),
+            ]
+        )
+    else:
+        bodyfat_kpi = "🔥 0%"
+
+    kpi_bodyfat_text = bodyfat_kpi
     kpi_workout_text = f"⏱ Total Workout: {total_workout} mins"
 
     return (
