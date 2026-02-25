@@ -33,9 +33,15 @@ app.layout = html.Div(
         # ===== KPI SECTION =====
         html.Div(
             [
-                html.Div("Weight KPI"),
-                html.Div("Body Fat KPI"),
-                html.Div("Workout KPI"),
+                html.Div(
+                    id="kpi-weight", style={"fontSize": "20px", "fontWeight": "bold"}
+                ),
+                html.Div(
+                    id="kpi-bodyfat", style={"fontSize": "20px", "fontWeight": "bold"}
+                ),
+                html.Div(
+                    id="kpi-workout", style={"fontSize": "20px", "fontWeight": "bold"}
+                ),
             ],
             style={
                 "display": "flex",
@@ -76,6 +82,9 @@ app.layout = html.Div(
     Output("weight-chart", "figure"),
     Output("bodyfat-chart", "figure"),
     Output("workout-chart", "figure"),
+    Output("kpi-weight", "children"),
+    Output("kpi-bodyfat", "children"),
+    Output("kpi-workout", "children"),
     Input("date-picker", "start_date"),
     Input("date-picker", "end_date"),
 )
@@ -123,7 +132,30 @@ def update_charts(start_date, end_date):
     )
     workout_fig.update_layout(template="plotly_dark")
 
-    return weight_fig, bodyfat_fig, workout_fig
+    # ===== KPI CALCULATIONS =====
+    if not filtered_df.empty:
+        latest_weight = filtered_df.iloc[-1]["weight"]
+        latest_bodyfat = filtered_df.iloc[-1]["body_fat"]
+        total_workout = (
+            filtered_df["cardio_min"].sum() + filtered_df["weight_min"].sum()
+        )
+    else:
+        latest_weight = 0
+        latest_bodyfat = 0
+        total_workout = 0
+
+    kpi_weight_text = f"🏋️ Latest Weight: {latest_weight} kg"
+    kpi_bodyfat_text = f"🔥 Latest Body Fat: {latest_bodyfat}%"
+    kpi_workout_text = f"⏱ Total Workout: {total_workout} mins"
+
+    return (
+        weight_fig,
+        bodyfat_fig,
+        workout_fig,
+        kpi_weight_text,
+        kpi_bodyfat_text,
+        kpi_workout_text,
+    )
 
 
 if __name__ == "__main__":
