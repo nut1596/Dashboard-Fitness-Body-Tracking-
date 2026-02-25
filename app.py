@@ -157,18 +157,33 @@ def update_charts(start_date, end_date, workout_type, summary_type):
 
             summary_fig.update_layout(template="plotly_dark")
 
-    # ===== WEIGHT CHART =====
+    # ===== WEIGHT CHART WITH ROLLING AVERAGE =====
     if filtered_df.empty:
         weight_fig = px.line(title="No Weight Data Available")
         weight_fig.update_layout(template="plotly_dark")
     else:
+        weight_df = filtered_df.copy().sort_values("date")
+
+        # 🔥 Rolling average 3 จุด
+        weight_df["rolling_avg"] = weight_df["weight"].rolling(window=3).mean()
+
         weight_fig = px.line(
-            filtered_df,
+            weight_df,
             x="date",
             y="weight",
             title="Weight Progress Over Time",
             markers=True,
         )
+
+        # เพิ่มเส้น Rolling
+        weight_fig.add_scatter(
+            x=weight_df["date"],
+            y=weight_df["rolling_avg"],
+            mode="lines",
+            name="3-Point Rolling Avg",
+            line=dict(width=3),
+        )
+
         weight_fig.update_layout(template="plotly_dark")
 
     # ===== BODY FAT CHART =====
