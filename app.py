@@ -19,6 +19,15 @@ weight_fig.update_layout(
     template="plotly_dark", xaxis_title="Date", yaxis_title="Weight (kg)"
 )
 
+# ===== CREATE BODY FAT LINE CHART =====
+bodyfat_fig = px.line(
+    df, x="date", y="body_fat", title="Body Fat Percentage Over Time", markers=True
+)
+
+bodyfat_fig.update_layout(
+    template="plotly_dark", xaxis_title="Date", yaxis_title="Body Fat (%)"
+)
+
 app = dash.Dash(__name__)
 app.title = "Fitness Dashboard"
 
@@ -54,7 +63,7 @@ app.layout = html.Div(
         html.Div(
             [
                 dcc.Graph(figure=weight_fig),
-                html.Div("Graph 2 Placeholder"),
+                dcc.Graph(figure=bodyfat_fig),
                 html.Div("Graph 3 Placeholder"),
             ],
             style={"padding": "20px"},
