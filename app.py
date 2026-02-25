@@ -77,7 +77,7 @@ app.layout = html.Div(
                     id="summary-type",
                     options=[
                         {"label": "Weekly", "value": "W"},
-                        {"label": "Monthly", "value": "M"},
+                        {"label": "Monthly", "value": "ME"},
                     ],
                     value="W",
                     clearable=False,
@@ -159,6 +159,10 @@ def update_charts(start_date, end_date, workout_type, summary_type):
     else:
         summary_df = filtered_df.copy()
         summary_df = summary_df.set_index("date")
+
+        # ===== FIX pandas frequency (Pandas 2.2+) =====
+        if summary_type == "M":
+            summary_type = "ME"
 
         aggregated = summary_df.resample(summary_type).sum(numeric_only=True)
 
