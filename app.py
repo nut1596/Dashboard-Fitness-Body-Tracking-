@@ -1,12 +1,19 @@
 import dash
 from dash import html
+import pandas as pd
+
+# ===== LOAD DATA =====
+df = pd.read_csv("data.csv")
+df["date"] = pd.to_datetime(df["date"])
+
+print("Data Loaded Successfully")
+print(df.head())
 
 app = dash.Dash(__name__)
 app.title = "Fitness Dashboard"
 
 app.layout = html.Div(
     [
-        # ===== HEADER =====
         html.Div(
             [
                 html.H1("💪 Fitness & Body Tracking Dashboard"),
@@ -19,12 +26,11 @@ app.layout = html.Div(
                 "color": "white",
             },
         ),
-        # ===== KPI SECTION =====
         html.Div(
             [
-                html.Div("Weight KPI", className="kpi-card"),
-                html.Div("Body Fat KPI", className="kpi-card"),
-                html.Div("Workout KPI", className="kpi-card"),
+                html.Div("Weight KPI"),
+                html.Div("Body Fat KPI"),
+                html.Div("Workout KPI"),
             ],
             style={
                 "display": "flex",
@@ -32,7 +38,6 @@ app.layout = html.Div(
                 "padding": "20px",
             },
         ),
-        # ===== GRAPH SECTION =====
         html.Div(
             [
                 html.Div("Graph 1 Placeholder"),
