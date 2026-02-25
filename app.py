@@ -79,6 +79,7 @@ app.layout = html.Div(
                 dcc.Graph(id="weight-chart"),
                 dcc.Graph(id="bodyfat-chart"),
                 dcc.Graph(id="workout-chart"),
+                dcc.Graph(id="weekly-workout-chart"),  # ← เพิ่มใหม่
             ],
             style={"padding": "20px"},
         ),
@@ -91,6 +92,7 @@ app.layout = html.Div(
     Output("weight-chart", "figure"),
     Output("bodyfat-chart", "figure"),
     Output("workout-chart", "figure"),
+    Output("weekly-workout-chart", "figure"),
     Output("kpi-weight", "children"),
     Output("kpi-bodyfat", "children"),
     Output("kpi-workout", "children"),
@@ -108,6 +110,46 @@ def update_charts(start_date, end_date, workout_type):
         filtered_df = filtered_df[filtered_df["cardio_min"] > 0]
     elif workout_type == "weight":
         filtered_df = filtered_df[filtered_df["weight_min"] > 0]
+
+    if filtered_df.empty:
+        weekly_fig = px.bar(title="Weekly Total Workout Minutes")
+        weekly_fig.update_layout(template="plotly_dark")
+    else:
+        weekly_df = filtered_df.copy()
+        weekly_df = weekly_df.set_index("date")
+        weekly_summary = weekly_df.resample("W").sum()
+
+        weekly_summary["total_workout"] = (
+            weekly_summary["cardio_min"] + weekly_summary["weight_min"]
+        )
+
+        weekly_fig = px.bar(
+            weekly_summary,
+            x=weekly_summary.index,
+            y="total_workout",
+            title="Weekly Total Workout Minutes",
+        )
+
+        weekly_fig.update_layout(template="plotly_dark")
+
+    # ===== WEEKLY SUMMARY =====
+    weekly_df = filtered_df.copy()
+    weekly_df = weekly_df.set_index("date")
+
+    weekly_summary = weekly_df.resample("W").sum()
+
+    weekly_summary["total_workout"] = (
+        weekly_summary["cardio_min"] + weekly_summary["weight_min"]
+    )
+
+    weekly_fig = px.bar(
+        weekly_summary,
+        x=weekly_summary.index,
+        y="total_workout",
+        title="Weekly Total Workout Minutes",
+    )
+
+    weekly_fig.update_layout(template="plotly_dark")
 
     # ===== Weight Chart =====
     weight_fig = px.line(
@@ -168,6 +210,7 @@ def update_charts(start_date, end_date, workout_type):
         weight_fig,
         bodyfat_fig,
         workout_fig,
+        weekly_fig,
         kpi_weight_text,
         kpi_bodyfat_text,
         kpi_workout_text,
