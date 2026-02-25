@@ -31,23 +31,14 @@ app.layout = html.Div(
             },
         ),
         # ===== KPI SECTION =====
+        # ===== KPI SECTION =====
         html.Div(
             [
-                html.Div(
-                    id="kpi-weight", style={"fontSize": "20px", "fontWeight": "bold"}
-                ),
-                html.Div(
-                    id="kpi-bodyfat", style={"fontSize": "20px", "fontWeight": "bold"}
-                ),
-                html.Div(
-                    id="kpi-workout", style={"fontSize": "20px", "fontWeight": "bold"}
-                ),
+                html.Div(id="kpi-weight", className="kpi-card"),
+                html.Div(id="kpi-bodyfat", className="kpi-card"),
+                html.Div(id="kpi-workout", className="kpi-card"),
             ],
-            style={
-                "display": "flex",
-                "justifyContent": "space-around",
-                "padding": "20px",
-            },
+            className="kpi-container",
         ),
         # ===== DATE RANGE FILTER =====
         html.Div(

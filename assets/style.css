@@ -1,0 +1,27 @@
+body {
+    background-color: #0f0f0f;
+    font-family: Arial, sans-serif;
+}
+
+.kpi-container {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+}
+
+.kpi-card {
+    background-color: #1c1c1c;
+    padding: 20px;
+    border-radius: 12px;
+    width: 30%;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+    transition: transform 0.2s ease;
+}
+
+.kpi-card:hover {
+    transform: scale(1.05);
+}
