@@ -8,10 +8,6 @@ import plotly.express as px
 df = pd.read_csv("data.csv")
 df["date"] = pd.to_datetime(df["date"])
 
-print("Data Loaded Successfully")
-print(df.head())
-
-
 app = dash.Dash(__name__)
 app.title = "Fitness Dashboard"
 
@@ -31,7 +27,6 @@ app.layout = html.Div(
             },
         ),
         # ===== KPI SECTION =====
-        # ===== KPI SECTION =====
         html.Div(
             [
                 html.Div(id="kpi-weight", className="kpi-card"),
@@ -40,14 +35,14 @@ app.layout = html.Div(
             ],
             className="kpi-container",
         ),
-        # ===== DATE RANGE FILTER =====
+        # ===== DATE FILTER =====
         html.Div(
             [
                 html.Label("Select Date Range:"),
                 dcc.DatePickerRange(
                     id="date-picker",
-                    min_date_allowed=df["date"].min(),
-                    max_date_allowed=df["date"].max(),
+                    min_date_allowed=pd.to_datetime("2025-01-01"),
+                    max_date_allowed=pd.to_datetime("2027-12-31"),
                     start_date=df["date"].min(),
                     end_date=df["date"].max(),
                     display_format="YYYY-MM-DD",
@@ -73,13 +68,30 @@ app.layout = html.Div(
             ],
             style={"textAlign": "center", "padding": "20px"},
         ),
+        # ===== SUMMARY TYPE FILTER =====
+        html.Div(
+            [
+                html.Label("Select Summary View:"),
+                dcc.Dropdown(
+                    id="summary-type",
+                    options=[
+                        {"label": "Weekly", "value": "W"},
+                        {"label": "Monthly", "value": "M"},
+                    ],
+                    value="W",
+                    clearable=False,
+                    style={"width": "300px", "margin": "0 auto"},
+                ),
+            ],
+            style={"textAlign": "center", "padding": "20px"},
+        ),
         # ===== GRAPH SECTION =====
         html.Div(
             [
                 dcc.Graph(id="weight-chart"),
                 dcc.Graph(id="bodyfat-chart"),
                 dcc.Graph(id="workout-chart"),
-                dcc.Graph(id="weekly-workout-chart"),  # ← เพิ่มใหม่
+                dcc.Graph(id="summary-chart"),
             ],
             style={"padding": "20px"},
         ),
@@ -87,22 +99,27 @@ app.layout = html.Div(
 )
 
 
-# ===== CALLBACK FOR DATE FILTER =====
+# ===== CALLBACK =====
 @app.callback(
     Output("weight-chart", "figure"),
     Output("bodyfat-chart", "figure"),
     Output("workout-chart", "figure"),
-    Output("weekly-workout-chart", "figure"),
+    Output("summary-chart", "figure"),
     Output("kpi-weight", "children"),
     Output("kpi-bodyfat", "children"),
     Output("kpi-workout", "children"),
     Input("date-picker", "start_date"),
     Input("date-picker", "end_date"),
     Input("workout-filter", "value"),
+    Input("summary-type", "value"),
 )
-def update_charts(start_date, end_date, workout_type):
+def update_charts(start_date, end_date, workout_type, summary_type):
 
-    # Filter dataframe
+    # 🔥 แปลง string เป็น datetime ก่อน
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+
+    # ===== FILTER BY DATE =====
     filtered_df = df[(df["date"] >= start_date) & (df["date"] <= end_date)]
 
     # ===== FILTER BY WORKOUT TYPE =====
@@ -111,67 +128,64 @@ def update_charts(start_date, end_date, workout_type):
     elif workout_type == "weight":
         filtered_df = filtered_df[filtered_df["weight_min"] > 0]
 
+    # ===== SUMMARY (WEEKLY / MONTHLY) =====
     if filtered_df.empty:
-        weekly_fig = px.bar(title="Weekly Total Workout Minutes")
-        weekly_fig.update_layout(template="plotly_dark")
+        summary_fig = px.bar(title="No Data Available")
+        summary_fig.update_layout(template="plotly_dark")
     else:
-        weekly_df = filtered_df.copy()
-        weekly_df = weekly_df.set_index("date")
-        weekly_summary = weekly_df.resample("W").sum()
+        summary_df = filtered_df.copy()
+        summary_df = summary_df.set_index("date")
 
-        weekly_summary["total_workout"] = (
-            weekly_summary["cardio_min"] + weekly_summary["weight_min"]
+        aggregated = summary_df.resample(summary_type).sum(numeric_only=True)
+
+        if aggregated.empty:
+            summary_fig = px.bar(title="No Aggregated Data")
+            summary_fig.update_layout(template="plotly_dark")
+        else:
+            aggregated["total_workout"] = (
+                aggregated["cardio_min"] + aggregated["weight_min"]
+            )
+
+            aggregated = aggregated.reset_index()
+
+            summary_fig = px.bar(
+                aggregated,
+                x="date",
+                y="total_workout",
+                title=f"{'Weekly' if summary_type=='W' else 'Monthly'} Total Workout Minutes",
+            )
+
+            summary_fig.update_layout(template="plotly_dark")
+
+    # ===== WEIGHT CHART =====
+    if filtered_df.empty:
+        weight_fig = px.line(title="No Weight Data Available")
+        weight_fig.update_layout(template="plotly_dark")
+    else:
+        weight_fig = px.line(
+            filtered_df,
+            x="date",
+            y="weight",
+            title="Weight Progress Over Time",
+            markers=True,
         )
+        weight_fig.update_layout(template="plotly_dark")
 
-        weekly_fig = px.bar(
-            weekly_summary,
-            x=weekly_summary.index,
-            y="total_workout",
-            title="Weekly Total Workout Minutes",
+    # ===== BODY FAT CHART =====
+    if filtered_df.empty:
+        bodyfat_fig = px.line(title="No Body Fat Data Available")
+        bodyfat_fig.update_layout(template="plotly_dark")
+    else:
+        bodyfat_fig = px.line(
+            filtered_df,
+            x="date",
+            y="body_fat",
+            title="Body Fat Percentage Over Time",
+            markers=True,
         )
+        bodyfat_fig.update_layout(template="plotly_dark")
 
-        weekly_fig.update_layout(template="plotly_dark")
-
-    # ===== WEEKLY SUMMARY =====
-    weekly_df = filtered_df.copy()
-    weekly_df = weekly_df.set_index("date")
-
-    weekly_summary = weekly_df.resample("W").sum()
-
-    weekly_summary["total_workout"] = (
-        weekly_summary["cardio_min"] + weekly_summary["weight_min"]
-    )
-
-    weekly_fig = px.bar(
-        weekly_summary,
-        x=weekly_summary.index,
-        y="total_workout",
-        title="Weekly Total Workout Minutes",
-    )
-
-    weekly_fig.update_layout(template="plotly_dark")
-
-    # ===== Weight Chart =====
-    weight_fig = px.line(
-        filtered_df,
-        x="date",
-        y="weight",
-        title="Weight Progress Over Time",
-        markers=True,
-    )
-    weight_fig.update_layout(template="plotly_dark")
-
-    # ===== Body Fat Chart =====
-    bodyfat_fig = px.line(
-        filtered_df,
-        x="date",
-        y="body_fat",
-        title="Body Fat Percentage Over Time",
-        markers=True,
-    )
-    bodyfat_fig.update_layout(template="plotly_dark")
-
-    # ===== Workout Pie Chart =====
+    # ===== WORKOUT PIE =====
     total_cardio = filtered_df["cardio_min"].sum()
     total_weight_training = filtered_df["weight_min"].sum()
 
@@ -190,13 +204,11 @@ def update_charts(start_date, end_date, workout_type):
     )
     workout_fig.update_layout(template="plotly_dark")
 
-    # ===== KPI CALCULATIONS =====
+    # ===== KPI =====
     if not filtered_df.empty:
         latest_weight = filtered_df.iloc[-1]["weight"]
         latest_bodyfat = filtered_df.iloc[-1]["body_fat"]
-        total_workout = (
-            filtered_df["cardio_min"].sum() + filtered_df["weight_min"].sum()
-        )
+        total_workout = total_cardio + total_weight_training
     else:
         latest_weight = 0
         latest_bodyfat = 0
@@ -210,7 +222,7 @@ def update_charts(start_date, end_date, workout_type):
         weight_fig,
         bodyfat_fig,
         workout_fig,
-        weekly_fig,
+        summary_fig,
         kpi_weight_text,
         kpi_bodyfat_text,
         kpi_workout_text,
