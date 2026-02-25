@@ -1,5 +1,6 @@
 import dash
 from dash import html, dcc
+from dash import Input, Output
 import pandas as pd
 import plotly.express as px
 
@@ -78,6 +79,21 @@ app.layout = html.Div(
                 "justifyContent": "space-around",
                 "padding": "20px",
             },
+        ),
+        # ===== DATE RANGE FILTER =====
+        html.Div(
+            [
+                html.Label("Select Date Range:"),
+                dcc.DatePickerRange(
+                    id="date-picker",
+                    min_date_allowed=df["date"].min(),
+                    max_date_allowed=df["date"].max(),
+                    start_date=df["date"].min(),
+                    end_date=df["date"].max(),
+                    display_format="YYYY-MM-DD",
+                ),
+            ],
+            style={"textAlign": "center", "padding": "20px"},
         ),
         # ===== GRAPH SECTION =====
         html.Div(
