@@ -55,6 +55,24 @@ app.layout = html.Div(
             ],
             style={"textAlign": "center", "padding": "20px"},
         ),
+        # ===== WORKOUT TYPE FILTER =====
+        html.Div(
+            [
+                html.Label("Select Workout Type:"),
+                dcc.Dropdown(
+                    id="workout-filter",
+                    options=[
+                        {"label": "All", "value": "all"},
+                        {"label": "Cardio Only", "value": "cardio"},
+                        {"label": "Weight Training Only", "value": "weight"},
+                    ],
+                    value="all",
+                    clearable=False,
+                    style={"width": "300px", "margin": "0 auto"},
+                ),
+            ],
+            style={"textAlign": "center", "padding": "20px"},
+        ),
         # ===== GRAPH SECTION =====
         html.Div(
             [
@@ -78,11 +96,18 @@ app.layout = html.Div(
     Output("kpi-workout", "children"),
     Input("date-picker", "start_date"),
     Input("date-picker", "end_date"),
+    Input("workout-filter", "value"),
 )
-def update_charts(start_date, end_date):
+def update_charts(start_date, end_date, workout_type):
 
     # Filter dataframe
     filtered_df = df[(df["date"] >= start_date) & (df["date"] <= end_date)]
+
+    # ===== FILTER BY WORKOUT TYPE =====
+    if workout_type == "cardio":
+        filtered_df = filtered_df[filtered_df["cardio_min"] > 0]
+    elif workout_type == "weight":
+        filtered_df = filtered_df[filtered_df["weight_min"] > 0]
 
     # ===== Weight Chart =====
     weight_fig = px.line(
