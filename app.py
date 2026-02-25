@@ -42,8 +42,6 @@ app.layout = html.Div(
                 html.Label("Select Date Range:"),
                 dcc.DatePickerRange(
                     id="date-picker",
-                    min_date_allowed=pd.to_datetime("2025-01-01"),
-                    max_date_allowed=pd.to_datetime("2027-12-31"),
                     start_date=df["date"].min(),
                     end_date=df["date"].max(),
                     display_format="YYYY-MM-DD",
